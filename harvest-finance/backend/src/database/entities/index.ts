@@ -13,3 +13,5 @@ export type { CreditScoreHistoryEntry } from './credit-score.entity';
 export { CreditScore } from './credit-score.entity';
 export { Vault, VaultType, VaultStatus } from './vault.entity';
 export { Deposit, DepositStatus } from './deposit.entity';
+
+export { Reward, RewardStatus } from './reward.entity';

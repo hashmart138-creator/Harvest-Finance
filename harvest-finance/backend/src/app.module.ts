@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VaultsModule } from './vaults/vaults.module';
+import { RewardsModule } from './rewards/rewards.module';
 import {
   User,
   Order,
@@ -22,6 +23,7 @@ import {
   Deposit,
 } from './database/entities';
 import { CreateInitialSchema1700000000000 } from './database/migrations/1700000000000-CreateInitialSchema';
+import { CreateRewards1700000000005 } from './database/migrations/1700000000005-CreateRewards';
 import { CreateVaultsAndDeposits1700000000003 } from './database/migrations/1700000000003-CreateVaultsAndDeposits';
 
 @Module({
@@ -46,10 +48,12 @@ import { CreateVaultsAndDeposits1700000000003 } from './database/migrations/1700
           CreditScore,
           Vault,
           Deposit,
+          Reward,
         ],
         migrations: [
           CreateInitialSchema1700000000000,
           CreateVaultsAndDeposits1700000000003,
+          CreateRewards1700000000005,
         ],
         synchronize: false, // Disable auto-sync, use migrations
         migrationsRun: false, // Run migrations manually
@@ -83,6 +87,7 @@ import { CreateVaultsAndDeposits1700000000003 } from './database/migrations/1700
     OrdersModule,
     VerificationModule,
     DatabaseModule,
+    RewardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
