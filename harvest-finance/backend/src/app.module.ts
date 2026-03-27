@@ -12,6 +12,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VaultsModule } from './vaults/vaults.module';
+import { FarmIntelligenceModule } from './farm-intelligence/farm-intelligence.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { RewardsModule } from './rewards/rewards.module';
 import {
@@ -93,6 +94,7 @@ import { CreateVaultsAndDeposits1700000000003 } from './database/migrations/1700
     OrdersModule,
     VerificationModule,
     DatabaseModule,
+    FarmIntelligenceModule,
     AchievementsModule,
     RewardsModule,
   ],
