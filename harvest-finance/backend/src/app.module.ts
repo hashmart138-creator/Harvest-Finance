@@ -83,16 +83,16 @@ import { CreateFarmVaults1700000000008 } from './database/migrations/17000000000
           CreateWithdrawals1700000000007,
           CreateFarmVaults1700000000008,
         ],
-        synchronize: false, // Disable auto-sync, use migrations
-        migrationsRun: false, // Run migrations manually
+        synchronize: false,
+        migrationsRun: false,
         logging: configService.get<string>('NODE_ENV') === 'development',
       }),
       inject: [ConfigService],
     }),
     CacheModule.register({
       isGlobal: true,
-      ttl: 600, // 10 minutes
-      max: 100, // maximum number of items in cache
+      ttl: 600,
+      max: 100,
     }),
     AuthModule,
     UsersModule,
