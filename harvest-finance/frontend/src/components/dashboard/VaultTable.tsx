@@ -81,12 +81,12 @@ export const VaultTable: React.FC<VaultTableProps> = ({
   };
 
   return (
-    <div className="rounded-xl border border-gray-100 bg-white dark:border-zinc-800 dark:bg-zinc-950 overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-gray-100 bg-white dark:border-[rgba(141,187,85,0.15)] dark:bg-[#162a1a] overflow-hidden shadow-sm">
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead 
-              className="cursor-pointer hover:bg-gray-100 transition-colors"
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a3020] transition-colors"
               onClick={() => handleSort('name')}
             >
               <Inline gap="none" align="center">
@@ -95,7 +95,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
               </Inline>
             </TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-gray-100 transition-colors"
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a3020] transition-colors"
               onClick={() => handleSort('apy')}
             >
               <Inline gap="none" align="center">
@@ -104,7 +104,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
               </Inline>
             </TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-gray-100 transition-colors"
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a3020] transition-colors"
               onClick={() => handleSort('tvl')}
             >
               <Inline gap="none" align="center">
@@ -113,7 +113,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
               </Inline>
             </TableHead>
             <TableHead 
-              className="cursor-pointer hover:bg-gray-100 transition-colors"
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-[#1a3020] transition-colors"
               onClick={() => handleSort('riskLevel')}
             >
               <Inline gap="none" align="center">
@@ -133,8 +133,8 @@ export const VaultTable: React.FC<VaultTableProps> = ({
                     {vault.icon || getVaultIcon(vault.iconName)}
                   </div>
                   <div>
-                    <div className="font-bold text-gray-900 dark:text-zinc-50">{vault.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-zinc-400">{vault.asset}</div>
+                    <div className="font-bold text-gray-900 dark:text-white">{vault.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{vault.asset}</div>
                   </div>
                 </div>
               </TableCell>
@@ -143,7 +143,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
                   {formatPercentage(vault.apy)}
                 </Badge>
               </TableCell>
-              <TableCell className="font-medium text-gray-700 dark:text-zinc-300">
+              <TableCell className="font-medium text-gray-700 dark:text-gray-200">
                 {formatCurrency(vault.tvl)}
               </TableCell>
               <TableCell>
@@ -165,7 +165,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
                     variant="outline" 
                     size="sm"
                     onClick={() => onWithdraw(vault.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity border-gray-200 dark:border-zinc-800 h-8"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity border-gray-200 dark:border-[rgba(141,187,85,0.25)] text-gray-700 dark:text-gray-200 h-8"
                   >
                     Withdraw
                   </Button>
@@ -176,7 +176,7 @@ export const VaultTable: React.FC<VaultTableProps> = ({
           ))}
           {sortedVaults.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="h-24 text-center text-gray-500">
+              <TableCell colSpan={5} className="h-24 text-center text-gray-500 dark:text-gray-400">
                 No vaults found.
               </TableCell>
             </TableRow>

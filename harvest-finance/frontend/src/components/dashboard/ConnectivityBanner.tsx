@@ -23,8 +23,8 @@ export function ConnectivityBanner({
       variant="outlined"
       className={
         isOnline
-          ? "border-emerald-200 bg-emerald-50/80"
-          : "border-amber-200 bg-amber-50/90"
+          ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/80 dark:bg-emerald-900/20"
+          : "border-amber-200 dark:border-amber-900 bg-amber-50/90 dark:bg-amber-900/20"
       }
     >
       <CardBody className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
@@ -32,8 +32,8 @@ export function ConnectivityBanner({
           <div
             className={`mt-0.5 flex h-10 w-10 items-center justify-center rounded-full ${
               isOnline
-                ? "bg-emerald-100 text-emerald-700"
-                : "bg-amber-100 text-amber-700"
+                ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                : "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
             }`}
           >
             {isOnline ? (
@@ -44,7 +44,7 @@ export function ConnectivityBanner({
           </div>
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-sm font-semibold text-gray-900">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
                 {isOnline
                   ? "Online and syncing normally"
                   : "Offline mode is active"}
@@ -57,14 +57,14 @@ export function ConnectivityBanner({
                 {queuedActions} queued action{queuedActions === 1 ? "" : "s"}
               </Badge>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               {isOnline
                 ? "Cached vault data stays available, and queued deposits or AI requests will sync automatically."
                 : "You can keep browsing your vault snapshot, queue deposits, withdrawals, and AI requests, and sync them when the connection returns."}
             </p>
             {lastUpdated && (
-              <p className="text-xs text-gray-500">
-                Cached snapshot updated {new Date(lastUpdated).toLocaleString()}
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Cached snapshot updated {new Date(lastUpdated).toLocaleString('en-US')}
                 .
               </p>
             )}

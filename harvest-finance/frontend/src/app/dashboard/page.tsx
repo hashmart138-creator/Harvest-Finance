@@ -239,10 +239,10 @@ export default function DashboardPage() {
           <Badge variant="primary" className="mb-2">
             Farm Vault Dashboard
           </Badge>
-          <h1 className="text-3xl font-bold text-gray-900 md:text-4xl">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white md:text-4xl">
             Mobile-ready farming intelligence
           </h1>
-          <p className="mt-2 max-w-3xl text-gray-600">
+          <p className="mt-2 max-w-3xl text-gray-600 dark:text-gray-400">
             Track vault health, request crop suggestions, explore live regional
             activity, and keep working even when the network drops.
           </p>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
             <Card key={card.title} variant="default">
               <CardBody className="space-y-4 p-5">
                 <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-harvest-green-50 text-harvest-green-700">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-harvest-green-50 dark:bg-harvest-green-900/40 text-harvest-green-700 dark:text-harvest-green-300">
                     <Icon className="h-5 w-5" />
                   </div>
                   <Badge variant="success" size="sm" isPill>
@@ -291,14 +291,14 @@ export default function DashboardPage() {
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     {card.title}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {card.value}
                   </p>
                 </div>
-                <p className="text-sm text-gray-500">{card.helper}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{card.helper}</p>
               </CardBody>
             </Card>
           );
@@ -313,10 +313,10 @@ export default function DashboardPage() {
         <Card variant="default" className="h-fit">
           <CardBody className="space-y-5 p-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Recent vault activity
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Cached locally so the latest dashboard view remains visible
                 offline.
               </p>
@@ -325,21 +325,21 @@ export default function DashboardPage() {
               {snapshot.recentTransactions.map((transaction) => (
                 <div
                   key={transaction.id}
-                  className="flex items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3"
+                  className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-[rgba(141,187,85,0.15)] bg-gray-50 dark:bg-[#1a3020] px-4 py-3"
                 >
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {transaction.type}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(transaction.createdAt).toLocaleString()}
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(transaction.createdAt).toLocaleString('en-US')}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-gray-900 dark:text-white">
                       ${transaction.amount}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
                       {transaction.status}
                     </p>
                   </div>
@@ -350,16 +350,16 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)]">
         <VaultOverview />
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)]">
         <VaultActivityFeed />
       </div>
 
       {/* Crop Insurance */}
-      <div className="pt-4 border-t border-gray-200">
+      <div className="pt-4 border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)]">
         <CropInsurancePanel />
       </div>
 

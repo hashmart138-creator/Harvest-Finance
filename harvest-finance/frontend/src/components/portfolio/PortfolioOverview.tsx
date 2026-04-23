@@ -50,7 +50,7 @@ export const PortfolioOverview: React.FC<PortfolioOverviewProps> = ({ stats }) =
             />
             <CardBody className="mt-4">
               <div className="flex items-baseline justify-between">
-                <span className="text-2xl font-bold text-gray-900">{card.value}</span>
+                <span className="text-2xl font-bold text-gray-900 dark:text-white">{card.value}</span>
                 {card.trend && (
                   <Badge variant="success" size="sm" isPill>
                     {card.trend}
