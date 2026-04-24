@@ -23,7 +23,10 @@ import { HealthModule } from './health/health.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { LoggerModule } from './logger/logger.module';
 import { OrdersModule } from './orders/orders.module';
+import { PortfolioModule } from './portfolio/portfolio.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { SorobanModule } from './soroban/soroban.module';
+import { StellarModule } from './stellar/stellar.module';
 import { VerificationModule } from './verification/verification.module';
 import {
   Achievement,
@@ -33,6 +36,7 @@ import {
   Notification,
   Order,
   Reward,
+  SorobanEvent,
   Transaction,
   User,
   Vault,
@@ -51,6 +55,7 @@ import { CreateWithdrawals1700000000007 } from './database/migrations/1700000000
 import { CreateFarmVaults1700000000008 } from './database/migrations/1700000000008-CreateFarmVaults';
 import { CreateInsurance1700000000009 } from './database/migrations/1700000000009-CreateInsurance';
 import { AddInsuranceNotificationType1700000000010 } from './database/migrations/1700000000010-AddInsuranceNotificationType';
+import { CreateSorobanEvents1700000000011 } from './database/migrations/1700000000011-CreateSorobanEvents';
 
 @Module({
   imports: [
@@ -82,6 +87,7 @@ import { AddInsuranceNotificationType1700000000010 } from './database/migrations
           FarmVault,
           InsurancePlan,
           InsuranceSubscription,
+          SorobanEvent,
         ],
         migrations: [
           CreateInitialSchema1700000000000,
@@ -92,6 +98,7 @@ import { AddInsuranceNotificationType1700000000010 } from './database/migrations
           CreateFarmVaults1700000000008,
           CreateInsurance1700000000009,
           AddInsuranceNotificationType1700000000010,
+          CreateSorobanEvents1700000000011,
         ],
         synchronize: false,
         migrationsRun: false,
@@ -118,6 +125,9 @@ import { AddInsuranceNotificationType1700000000010 } from './database/migrations
     InsuranceModule,
     RealtimeModule,
     LoggerModule,
+    StellarModule,
+    SorobanModule,
+    PortfolioModule,
   ],
   controllers: [AppController],
   providers: [

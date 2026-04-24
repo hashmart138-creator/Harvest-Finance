@@ -66,6 +66,140 @@ export class StellarService {
         }
     }
 
+    /**
+     * Returns the full list of asset balances for a Stellar account.
+     * Unlike `getAccountInfo`, this preserves non-native assets so callers
+     * can aggregate portfolios across multiple tokens.
+     */
+    async getAccountBalances(
+        publicKey: string,
+    ): Promise<
+        { assetCode: string; assetIssuer: string | null; balance: string }[]
+    > {
+        this.validatePublicKey(publicKey);
+        try {
+            const account = await this.server.loadAccount(publicKey);
+            return account.balances.map((b: any) => ({
+                assetCode: b.asset_type === 'native' ? 'XLM' : b.asset_code,
+                assetIssuer: b.asset_type === 'native' ? null : b.asset_issuer ?? null,
+                balance: String(b.balance ?? '0'),
+            }));
+        } catch (err) {
+            this.handleStellarError(err, `getAccountBalances(${publicKey})`);
+        }
+    }
+
+    /**
+     * Returns a paginated slice of transactions for a Stellar account.
+     * Wraps Horizon's cursor-based pagination with simple skip/limit semantics
+     * to keep JSON responses bounded.
+     */
+    async getAccountTransactions(
+        publicKey: string,
+        skip = 0,
+        limit = 20,
+        order: 'asc' | 'desc' = 'desc',
+    ): Promise<{
+        total: number | null;
+        skip: number;
+        limit: number;
+        order: 'asc' | 'desc';
+        records: any[];
+        nextCursor: string | null;
+        prevCursor: string | null;
+    }> {
+        this.validatePublicKey(publicKey);
+
+        const safeLimit = Math.min(Math.max(limit, 1), 200);
+        const safeSkip = Math.max(skip, 0);
+
+        try {
+            let remainingToSkip = safeSkip;
+            let cursor: string | undefined;
+            const pageSize = Math.min(200, Math.max(safeLimit, remainingToSkip > 0 ? 200 : safeLimit));
+
+            // Horizon is cursor-paginated; to honour skip we fast-forward through
+            // prior pages using the largest permitted page size.
+            while (remainingToSkip >= pageSize) {
+                const call = this.server
+                    .transactions()
+                    .forAccount(publicKey)
+                    .order(order)
+                    .limit(pageSize);
+                if (cursor) call.cursor(cursor);
+
+                const page = await call.call();
+                if (page.records.length === 0) {
+                    return {
+                        total: null,
+                        skip: safeSkip,
+                        limit: safeLimit,
+                        order,
+                        records: [],
+                        nextCursor: null,
+                        prevCursor: null,
+                    };
+                }
+
+                cursor = page.records[page.records.length - 1].paging_token;
+                remainingToSkip -= page.records.length;
+
+                if (page.records.length < pageSize) {
+                    // Reached the end before finishing the skip.
+                    return {
+                        total: null,
+                        skip: safeSkip,
+                        limit: safeLimit,
+                        order,
+                        records: [],
+                        nextCursor: null,
+                        prevCursor: null,
+                    };
+                }
+            }
+
+            // Consume the remaining skip within the next page, then take the requested slice.
+            const finalPageSize = Math.min(200, remainingToSkip + safeLimit);
+            const finalCall = this.server
+                .transactions()
+                .forAccount(publicKey)
+                .order(order)
+                .limit(finalPageSize);
+            if (cursor) finalCall.cursor(cursor);
+
+            const finalPage = await finalCall.call();
+            const slice = finalPage.records.slice(
+                remainingToSkip,
+                remainingToSkip + safeLimit,
+            );
+
+            const mapped = slice.map((tx: any) => ({
+                hash: tx.hash,
+                ledger: tx.ledger,
+                createdAt: tx.created_at,
+                sourceAccount: tx.source_account,
+                feeCharged: tx.fee_charged,
+                operationCount: tx.operation_count,
+                successful: tx.successful,
+                memo: tx.memo ?? null,
+                memoType: tx.memo_type ?? null,
+                pagingToken: tx.paging_token,
+            }));
+
+            return {
+                total: null,
+                skip: safeSkip,
+                limit: safeLimit,
+                order,
+                records: mapped,
+                nextCursor: slice.length > 0 ? slice[slice.length - 1].paging_token : null,
+                prevCursor: slice.length > 0 ? slice[0].paging_token : null,
+            };
+        } catch (err) {
+            this.handleStellarError(err, `getAccountTransactions(${publicKey})`);
+        }
+    }
+
     async verifyConnection(): Promise<boolean> {
         try {
         await this.server.loadAccount(this.platformPublicKey);
