@@ -105,7 +105,7 @@ function VaultWithProgress({
         onDeposit={onDeposit} 
         onWithdraw={onWithdraw} 
       />
-      <div className="px-4 py-4 -mt-1 bg-white dark:bg-zinc-950 border border-t-0 border-gray-100 dark:border-zinc-800 rounded-b-xl">
+      <div className="px-4 py-4 -mt-1 bg-white dark:bg-[#162a1a] border border-t-0 border-gray-100 dark:border-[rgba(141,187,85,0.12)] rounded-b-xl">
         <ProgressBar
           progress={progress}
           achievedMilestones={achieved}
@@ -201,7 +201,7 @@ export default function VaultsPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-[#f4f8f0] dark:bg-[#0d1f12] flex flex-col">
       <Header />
 
       <main className="flex-1 pt-24 pb-16">
@@ -209,23 +209,23 @@ export default function VaultsPage() {
           <Container size="lg">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <div className="max-w-2xl">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-zinc-50 mb-2">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   Smart Farm Vaults
                 </h1>
-                <p className="text-gray-600 dark:text-zinc-400">
+                <p className="text-gray-600 dark:text-gray-400">
                   Deposit your assets into automated yield-generating strategies.
                   Track your seasonal progress and hit milestones.
                 </p>
               </div>
               
-              <div className="flex items-center bg-gray-100 dark:bg-zinc-900 p-1 rounded-lg self-start">
+              <div className="flex items-center bg-gray-100 dark:bg-[#162a1a] border border-transparent dark:border-[rgba(141,187,85,0.12)] p-1 rounded-lg self-start">
                 <button
                   onClick={() => setViewMode('grid')}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
-                    viewMode === 'grid' 
-                      ? "bg-white dark:bg-zinc-800 text-harvest-green-600 shadow-sm" 
-                      : "text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300"
+                    viewMode === 'grid'
+                      ? "bg-white dark:bg-[#1a3020] text-harvest-green-600 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   )}
                 >
                   <LayoutGrid className="w-4 h-4" />
@@ -235,9 +235,9 @@ export default function VaultsPage() {
                   onClick={() => setViewMode('list')}
                   className={cn(
                     "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all",
-                    viewMode === 'list' 
-                      ? "bg-white dark:bg-zinc-800 text-harvest-green-600 shadow-sm" 
-                      : "text-gray-500 hover:text-gray-700 dark:hover:text-zinc-300"
+                    viewMode === 'list'
+                      ? "bg-white dark:bg-[#1a3020] text-harvest-green-600 shadow-sm"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                   )}
                 >
                   <List className="w-4 h-4" />

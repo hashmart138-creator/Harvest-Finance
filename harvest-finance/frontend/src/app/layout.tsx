@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { MilestoneToastContainer } from "@/components/dashboard/MilestoneToast";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
 
 const geistSans = Geist({
@@ -49,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
@@ -59,12 +60,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ServiceWorkerRegistration />
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        {children}
-        <MilestoneToastContainer />
+        <ThemeProvider>
+          <ServiceWorkerRegistration />
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          {children}
+          <MilestoneToastContainer />
+        </ThemeProvider>
       </body>
     </html>
   );

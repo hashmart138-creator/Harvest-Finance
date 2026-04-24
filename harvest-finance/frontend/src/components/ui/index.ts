@@ -77,3 +77,9 @@ export type {
 } from './types';
 
 export { cn, withPrefix } from './types';
+
+// ============================================
+// Theme
+// ============================================
+
+export { ThemeToggle } from './ThemeToggle';

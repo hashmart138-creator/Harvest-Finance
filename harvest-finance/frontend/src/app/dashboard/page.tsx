@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { 
   Bot, 
   Database, 
@@ -239,10 +239,10 @@ export default function DashboardPage() {
           <Badge variant="primary" className="mb-2 w-fit">
             Farm Vault Dashboard
           </Badge>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 md:text-4xl">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white">
             Mobile-ready farming intelligence
           </h1>
-          <p className="max-w-3xl text-sm md:text-base text-gray-600">
+          <p className="mt-2 max-w-3xl text-sm md:text-base text-gray-600 dark:text-gray-400">
             Track vault health, request crop suggestions, explore live regional
             activity, and keep working even when the network drops.
           </p>
@@ -285,24 +285,25 @@ export default function DashboardPage() {
             <Card key={card.title} variant="default" className="hover:shadow-md transition-shadow">
               <CardBody className="space-y-4 p-4 md:p-5">
                 <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-harvest-green-50 text-harvest-green-700">
-                    <Icon className="h-4 w-4 md:h-5 md:w-5" />
-                  </div>
+                <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-full bg-harvest-green-50 dark:bg-harvest-green-900/40 text-harvest-green-700 dark:text-harvest-green-300">
+  <Icon className="h-4 w-4 md:h-5 md:w-5" />
+</div>
                   <Badge variant="success" size="sm" isPill>
                     Cached
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                     {card.title}
                   </p>
-                  <p className="text-xl md:text-2xl font-bold text-gray-900">
+   <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">
                     {card.value}
                   </p>
                   <p className="text-xs md:text-sm text-gray-500 mt-1">
                     {card.helper}
                   </p>
                 </div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{card.helper}</p>
               </CardBody>
             </Card>
           );
@@ -313,68 +314,74 @@ export default function DashboardPage() {
       <CropRecommendationPanel isOnline={isOnline} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.95fr)]">
-        <div className="space-y-6">
-          <FarmActivityMap />
-          <VaultOverview />
+  <div className="space-y-6">
+    <FarmActivityMap />
+    <VaultOverview />
+  </div>
+  <div className="space-y-6">
+    <Card variant="default" className="h-fit">
+      <CardBody className="space-y-5 p-4 md:p-6">
+        <div>
+          <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
+            Recent vault activity
+          </h2>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Cached locally so the latest dashboard view remains visible
+            offline.
+          </p>
         </div>
-        <div className="space-y-6">
-          <Card variant="default" className="h-fit">
-            <CardBody className="space-y-5 p-4 md:p-6">
-              <div>
-                <h2 className="text-lg md:text-xl font-semibold text-gray-900">
-                  Recent vault activity
-                </h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Cached locally so the latest dashboard view remains visible
-                  offline.
+        <div className="space-y-3">
+          {snapshot.recentTransactions.map((transaction) => (
+            <div
+              key={transaction.id}
+              className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-[rgba(141,187,85,0.15)] bg-gray-50 dark:bg-[#1a3020] px-3 md:px-4 py-3"
+            >
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-gray-900 dark:text-white truncate">
+                  {transaction.type}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {new Date(transaction.createdAt).toLocaleString()}
                 </p>
               </div>
-              <div className="space-y-3">
-                {snapshot.recentTransactions.map((transaction) => (
-                  <div
-                    key={transaction.id}
-                    className="flex items-center justify-between rounded-2xl border border-gray-200 bg-gray-50 px-3 md:px-4 py-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-900 truncate">
-                        {transaction.type}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(transaction.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="text-right ml-2">
-                      <p className="font-semibold text-gray-900">
-                        ${transaction.amount}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {transaction.status}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-right ml-2">
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  ${transaction.amount}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {transaction.status}
+                </p>
               </div>
-            </CardBody>
-          </Card>
-          <VaultActivityFeed />
+            </div>
+          ))}
         </div>
-      </div>
+      </CardBody>
+    </Card>
+  </div>
+</div>
 
-      {/* Additional Sections */}
-      <div className="space-y-6">
-        <div className="border-t border-gray-200 pt-6">
-          <CropInsurancePanel />
-        </div>
+     {/* Additional Sections */}
+<div className="space-y-6">
+  <div className="border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)] pt-4">
+    <VaultOverview />
+  </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <SeasonalTipsList showFilters />
-        </div>
+  <div className="border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)] pt-4">
+    <VaultActivityFeed />
+  </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <CropRecommendationPanel isOnline={isOnline} />
-        </div>
-      </div>
+  <div className="border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)] pt-6">
+    <CropInsurancePanel />
+  </div>
 
+  <div className="border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)] pt-6">
+    <SeasonalTipsList showFilters />
+  </div>
+
+  <div className="border-t border-gray-200 dark:border-[rgba(141,187,85,0.12)] pt-6">
+    <CropRecommendationPanel isOnline={isOnline} />
+  </div>
+</div>
       {/* AI Assistant */}
       <AIAssistantChat context={aiContext} />
     </div>
