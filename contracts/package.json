@@ -18,6 +18,7 @@
     "verify:halmos": "halmos --contract VaultFormalSpec",
     "verify:certora": "certoraRun certora/conf/Vault.conf"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6"
+  }
 }
