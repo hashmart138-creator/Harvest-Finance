@@ -5,13 +5,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "./interfaces/IVault.sol";
+import "./libraries/VaultLib.sol";
 
 /**
  * @title Vault
- * @dev A simple ERC4626-like vault for depositing and withdrawing tokens
- * with share-based accounting.
+ * @dev ERC4626-like vault implementing IVault. Share/asset math is
+ * delegated to VaultLib for modularity and reusability.
  */
-contract Vault is ERC20, Ownable, ReentrancyGuard {
+contract Vault is IVault, ERC20, Ownable, ReentrancyGuard {
+    using VaultLib for uint256;
     IERC20 public asset;
     
     uint256 public totalAssets_;
@@ -120,26 +123,14 @@ contract Vault is ERC20, Ownable, ReentrancyGuard {
         emit Withdraw(msg.sender, receiver, assets, shares);
     }
 
-    /**
-     * @dev Convert assets to shares
-     */
+    /// @inheritdoc IVault
     function convertToShares(uint256 assets) public view returns (uint256) {
-        uint256 supply = totalSupply();
-        if (supply == 0) {
-            return assets;
-        }
-        return (assets * supply) / totalAssets_;
+        return VaultLib.toShares(assets, totalSupply(), totalAssets_);
     }
 
-    /**
-     * @dev Convert shares to assets
-     */
+    /// @inheritdoc IVault
     function convertToAssets(uint256 shares) public view returns (uint256) {
-        uint256 supply = totalSupply();
-        if (supply == 0) {
-            return shares;
-        }
-        return (shares * totalAssets_) / supply;
+        return VaultLib.toAssets(shares, totalSupply(), totalAssets_);
     }
 
     /**
