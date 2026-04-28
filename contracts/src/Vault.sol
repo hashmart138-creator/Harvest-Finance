@@ -177,7 +177,6 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 shares)
     {
         shares = _withdraw(assets, receiver, owner);
@@ -193,7 +192,6 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 shares)
     {
         _enforceMEVProtection(expectedAssetPrice, maxSlippageBps);
@@ -239,7 +237,6 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 assets)
     {
         assets = _redeem(shares, receiver, owner);
@@ -255,7 +252,6 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 assets)
     {
         _enforceMEVProtection(expectedAssetPrice, maxSlippageBps);
