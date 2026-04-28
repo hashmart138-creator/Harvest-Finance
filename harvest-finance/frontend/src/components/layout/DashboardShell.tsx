@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Menu, Search, User as UserIcon, X } from "lucide-react";
 import { NotificationCenter } from "@/components/Notification/NotificationCenter";
@@ -9,9 +9,35 @@ import { ThemeToggle } from "@/components/ui";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const firstMobileNavLinkRef = useRef<HTMLAnchorElement | null>(null);
+
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return;
+    }
+
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", onEscape);
+    firstMobileNavLinkRef.current?.focus();
+
+    return () => {
+      window.removeEventListener("keydown", onEscape);
+    };
+  }, [isMobileNavOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#0d1f12] flex">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-harvest-green-600 focus:px-3 focus:py-2 focus:text-white"
+      >
+        Skip to main content
+      </a>
       <Sidebar />
 
       <div className="flex-1 flex min-w-0 flex-col overflow-hidden h-screen">
@@ -94,14 +120,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 </button>
               </div>
               <nav className="space-y-1 px-3 py-4" role="navigation" aria-label="Dashboard navigation">
-                {dashboardNavItems.map((item) => {
+                {dashboardNavItems.map((item, index) => {
                   const Icon = item.icon;
                   return (
                     <Link
                       key={item.href}
+                      ref={index === 0 ? firstMobileNavLinkRef : undefined}
                       href={item.href}
                       onClick={() => setIsMobileNavOpen(false)}
-                      className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 transition hover:bg-harvest-green-50 dark:hover:bg-[#1a3020] hover:text-harvest-green-700 dark:hover:text-harvest-green-300 focus:outline-none focus:bg-harvest-green-50 focus:text-harvest-green-700"
+                      className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 transition hover:bg-harvest-green-50 dark:hover:bg-[#1a3020] hover:text-harvest-green-700 dark:hover:text-harvest-green-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-harvest-green-500 focus-visible:ring-offset-2"
                     >
                       <Icon className="h-5 w-5 text-gray-400" aria-hidden="true" />
                       {item.label}
@@ -113,7 +140,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto focus:outline-none" role="main" id="main-content">
+        <main className="flex-1 overflow-y-auto focus:outline-none" role="main" id="main-content" tabIndex={-1}>
           <div className="mx-auto max-w-7xl p-4 md:p-6 lg:p-8">{children}</div>
         </main>
       </div>

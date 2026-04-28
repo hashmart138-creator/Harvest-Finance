@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Badge,
@@ -19,6 +19,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { toI128, calculateEstimatedShares } from "@/lib/soroban-i128";
 import axios from "@/lib/api-client";
 import { ArrowUpRight, Wallet } from "lucide-react";
+import { trackDepositFunnelStep } from "@/lib/analytics/funnel";
 
 interface DepositModalVault {
   id: string;
@@ -53,6 +54,31 @@ export const DepositModal: React.FC<DepositModalProps> = ({
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feeEstimate, setFeeEstimate] = useState<{
+    baseFee: string;
+    cheapFeeSuggestion: { xlm: string; stroops: number };
+    fastFeeSuggestion: { xlm: string; stroops: number };
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    axios
+      .get(`${apiBaseUrl}/stellar/fee?operations=1`)
+      .then((response) => {
+        setFeeEstimate(response.data);
+      })
+      .catch(() => {
+        setFeeEstimate({
+          baseFee: "0.0000100",
+          cheapFeeSuggestion: { xlm: "0.0000100", stroops: 100 },
+          fastFeeSuggestion: { xlm: "0.0000250", stroops: 250 },
+        });
+      });
+  }, [isOpen]);
 
   // Derived values — update in real time as user types
   const numericAmount = parseFloat(amount) || 0;
@@ -89,6 +115,9 @@ export const DepositModal: React.FC<DepositModalProps> = ({
 
     setIsLoading(true);
     setError(null);
+
+    void trackDepositFunnelStep(token, "deposit_click", "Click Deposit");
+
     try {
       const i128Amount = Number(toI128(Number(amount)));
 
@@ -110,6 +139,8 @@ export const DepositModal: React.FC<DepositModalProps> = ({
         { amount: i128Amount },
         { headers: { Authorization: `Bearer ${token}` } },
       );
+
+      void trackDepositFunnelStep(token, "transaction_confirmed", "Transaction Confirmed");
 
       onSuccess?.();
       onDepositSuccess?.(vault.id, Number(amount));
@@ -214,6 +245,32 @@ export const DepositModal: React.FC<DepositModalProps> = ({
             <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
               {t("modals.offline_note")}
             </p>
+
+            {feeEstimate && (
+              <div className="mt-3 border-t border-gray-200 dark:border-gray-700 pt-3 space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Stellar Network Fee Estimator
+                </p>
+                <p className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Base fee (network):</span>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                    {feeEstimate.baseFee} XLM
+                  </span>
+                </p>
+                <p className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Cheap suggestion:</span>
+                  <span className="font-medium text-emerald-600 dark:text-emerald-400">
+                    {feeEstimate.cheapFeeSuggestion.xlm} XLM ({feeEstimate.cheapFeeSuggestion.stroops} stroops)
+                  </span>
+                </p>
+                <p className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">Fast suggestion:</span>
+                  <span className="font-medium text-harvest-green-600 dark:text-harvest-green-400">
+                    {feeEstimate.fastFeeSuggestion.xlm} XLM ({feeEstimate.fastFeeSuggestion.stroops} stroops)
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         </Stack>
       </ModalBody>
