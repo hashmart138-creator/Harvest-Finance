@@ -45,6 +45,17 @@ export {
 } from './Table';
 
 export { Alert } from './Alert';
+
+export type {
+  TableProps,
+  TableHeaderProps,
+  TableBodyProps,
+  TableFooterProps,
+  TableHeadProps,
+  TableRowProps,
+  TableCellProps,
+  TableCaptionProps,
+} from './Table';
 export type { AlertProps, AlertVariant } from './Alert';
 
 // ============================================
@@ -89,3 +100,24 @@ export { ThemeToggle } from './ThemeToggle';
 // ============================================
 
 export { Skeleton, VaultCardSkeleton, VaultTableRowSkeleton, TransactionRowSkeleton, MetricCardSkeleton } from './Skeleton';
+
+// ============================================
+// Tooltip
+// ============================================
+
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
+
+// ============================================
+// Empty State
+// ============================================
+
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps, EmptyStateVariant } from './EmptyState';
+
+// ============================================
+// Transaction Status
+// ============================================
+
+export { TransactionStatusBadge, TransactionStatusDot } from './TransactionStatus';
+export type { TxStatus } from './TransactionStatus';
