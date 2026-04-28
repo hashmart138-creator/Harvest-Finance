@@ -27,7 +27,10 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Vaults')
-@Controller('api/v1/vaults')
+@Controller({
+  path: 'vaults',
+  version: '1',
+})
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class VaultsController {
