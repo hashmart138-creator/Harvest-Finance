@@ -107,3 +107,10 @@ export { Skeleton, VaultCardSkeleton, VaultTableRowSkeleton, TransactionRowSkele
 
 export { Tooltip } from './Tooltip';
 export type { TooltipProps } from './Tooltip';
+
+// ============================================
+// Empty State
+// ============================================
+
+export { EmptyState } from './EmptyState';
+export type { EmptyStateProps, EmptyStateVariant } from './EmptyState';
