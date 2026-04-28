@@ -109,7 +109,8 @@ export default function TransactionsPage() {
       </div>
 
       <Card variant="default">
-        <CardBody className="p-0">
+        <CardBody className="p-0 overflow-x-auto">
+          <div className="min-w-[600px]">
           <Table>
             <TableHeader>
               <TableRow>
@@ -152,6 +153,7 @@ export default function TransactionsPage() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </CardBody>
       </Card>
       
