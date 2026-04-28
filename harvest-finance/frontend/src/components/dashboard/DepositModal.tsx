@@ -12,13 +12,15 @@ import {
   ModalHeader,
   Stack,
   Alert,
+  Tooltip,
 } from "@/components/ui";
 import { parseStellarError } from "@/lib/errors/stellar-errors";
 import { enqueueOfflineAction } from "@/lib/offline-support";
 import { useAuthStore } from "@/lib/stores/auth-store";
 import { toI128, calculateEstimatedShares } from "@/lib/soroban-i128";
 import axios from "@/lib/api-client";
-import { ArrowUpRight, Wallet } from "lucide-react";
+import { ArrowUpRight, Wallet, Info } from "lucide-react";
+import { getTermTooltip } from "@/lib/defi-terms";
 
 interface DepositModalVault {
   id: string;
@@ -136,10 +138,13 @@ export const DepositModal: React.FC<DepositModalProps> = ({
               </p>
               <h4 className="font-bold text-gray-900">{vault?.name}</h4>
             </div>
-            <Badge variant="success">
-              {t("common.apy")}:{" "}
-              {vault?.apy ?? vault?.cropCycle?.yieldRate ?? 0}%
-            </Badge>
+            <Tooltip content={getTermTooltip('apy')} position="top">
+              <Badge variant="success" className="cursor-help">
+                {t("common.apy")}:{" "}
+                {vault?.apy ?? vault?.cropCycle?.yieldRate ?? 0}%
+                <Info className="w-3 h-3 ml-1 inline-block opacity-60" />
+              </Badge>
+            </Tooltip>
           </div>
 
           {isOverBalance && (
@@ -202,9 +207,12 @@ export const DepositModal: React.FC<DepositModalProps> = ({
                 </span>
               </p>
               <p className="flex justify-between items-center">
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  Estimated shares received:
-                </span>
+                <Tooltip content={getTermTooltip('shares')} position="top">
+                  <span className="text-xs text-gray-400 dark:text-gray-500 cursor-help flex items-center gap-1">
+                    Estimated shares received:
+                    <Info className="w-3 h-3 opacity-60" />
+                  </span>
+                </Tooltip>
                 <span className="text-xs font-bold text-harvest-green-600 dark:text-harvest-green-400">
                   {numericAmount > 0 ? estimatedShares.toFixed(4) : "0"}
                 </span>

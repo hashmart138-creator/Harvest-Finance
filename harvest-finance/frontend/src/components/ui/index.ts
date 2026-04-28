@@ -45,6 +45,17 @@ export {
 } from './Table';
 
 export { Alert } from './Alert';
+
+export type {
+  TableProps,
+  TableHeaderProps,
+  TableBodyProps,
+  TableFooterProps,
+  TableHeadProps,
+  TableRowProps,
+  TableCellProps,
+  TableCaptionProps,
+} from './Table';
 export type { AlertProps, AlertVariant } from './Alert';
 
 // ============================================
@@ -89,3 +100,10 @@ export { ThemeToggle } from './ThemeToggle';
 // ============================================
 
 export { Skeleton, VaultCardSkeleton, VaultTableRowSkeleton, TransactionRowSkeleton, MetricCardSkeleton } from './Skeleton';
+
+// ============================================
+// Tooltip
+// ============================================
+
+export { Tooltip } from './Tooltip';
+export type { TooltipProps } from './Tooltip';
