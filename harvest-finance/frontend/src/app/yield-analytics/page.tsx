@@ -7,7 +7,18 @@ import { Card, CardHeader, CardBody } from '@/components/ui';
 
 export default function YieldAnalyticsPage() {
   const [selectedContract, setSelectedContract] = useState<string>('');
-  const [timeRange, setTimeRange] = useState<number>(30);
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d');
+
+  // Convert timeRange string to number for API
+  const getTimeRangeDays = (range: '7d' | '30d' | '90d' | 'all'): number => {
+    switch (range) {
+      case '7d': return 7;
+      case '30d': return 30;
+      case '90d': return 90;
+      case 'all': return 365; // Use 1 year as "all"
+      default: return 30;
+    }
+  };
 
   // Mock contract data - in a real app, this would come from an API
   const mockContracts = [
@@ -60,14 +71,13 @@ export default function YieldAnalyticsPage() {
                 <select
                   id="time-range"
                   value={timeRange}
-                  onChange={(e) => setTimeRange(Number(e.target.value))}
+                  onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d' | 'all')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 >
-                  <option value={7}>Last 7 days</option>
-                  <option value={14}>Last 14 days</option>
-                  <option value={30}>Last 30 days</option>
-                  <option value={60}>Last 60 days</option>
-                  <option value={90}>Last 90 days</option>
+                  <option value="7d">Last 7 days</option>
+                  <option value="30d">Last 30 days</option>
+                  <option value="90d">Last 90 days</option>
+                  <option value="all">All time</option>
                 </select>
               </div>
             </div>
@@ -80,7 +90,7 @@ export default function YieldAnalyticsPage() {
           <CardBody>
             <YieldChart
               vaultId={selectedContract || undefined}
-              timeRange={timeRange === 7 ? '7d' : timeRange === 30 ? '30d' : timeRange === 90 ? '90d' : 'all'}
+              timeRange={timeRange}
               height={400}
               showArea={true}
             />
@@ -90,7 +100,7 @@ export default function YieldAnalyticsPage() {
         {/* Analytics Panel */}
         <YieldAnalyticsPanel 
           contractId={selectedContract || undefined} 
-          timeRange={timeRange}
+          timeRange={getTimeRangeDays(timeRange)}
         />
       </div>
     </div>

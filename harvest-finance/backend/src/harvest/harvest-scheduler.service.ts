@@ -1,23 +1,43 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob } from 'cron';
 import { ConfigService } from '@nestjs/config';
 import { HarvestService } from './harvest.service';
 
 @Injectable()
-export class HarvestSchedulerService {
+export class HarvestSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(HarvestSchedulerService.name);
   private cronExpression: string;
 
   constructor(
     private harvestService: HarvestService,
     private configService: ConfigService,
+    private schedulerRegistry: SchedulerRegistry,
   ) {
     // Default to every 5 minutes, but configurable via env
     this.cronExpression = this.configService.get<string>('HARVEST_CRON_EXPRESSION') || '*/5 * * * *';
     this.logger.log(`Harvest scheduler initialized with cron expression: ${this.cronExpression}`);
   }
 
-  @Cron('0 */5 * * * *') // Every 5 minutes - runs at second 0 of every 5th minute
+  onModuleInit() {
+    this.registerHarvestJob();
+  }
+
+  private registerHarvestJob() {
+    try {
+      const harvestJob = new CronJob(this.cronExpression, async () => {
+        await this.handleHarvest();
+      });
+
+      this.schedulerRegistry.addCronJob('harvestJob', harvestJob);
+      harvestJob.start();
+
+      this.logger.log(`Harvest cron job registered and started with expression: ${this.cronExpression}`);
+    } catch (error) {
+      this.logger.error('Failed to register harvest cron job', error);
+    }
+  }
+
   async handleHarvest() {
     this.logger.log('Scheduled harvest job triggered');
 
@@ -40,12 +60,5 @@ export class HarvestSchedulerService {
     } catch (error) {
       this.logger.error('Scheduled harvest job failed with exception', error);
     }
-  }
-
-  // Alternative method for custom cron expression if needed
-  @Cron('cronExpression')
-  async handleCustomHarvest() {
-    // This would use the configurable cron expression
-    // For now, using the fixed 5-minute interval above
   }
 }

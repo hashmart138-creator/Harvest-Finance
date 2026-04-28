@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { HarvestSchedulerService } from './harvest-scheduler.service';
 import { HarvestService } from './harvest.service';
 import { Logger } from '@nestjs/common';
@@ -17,6 +18,10 @@ describe('HarvestSchedulerService', () => {
     get: jest.fn(),
   };
 
+  const mockSchedulerRegistry = {
+    addCronJob: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.spyOn(Logger.prototype, 'log').mockImplementation();
     jest.spyOn(Logger.prototype, 'warn').mockImplementation();
@@ -27,6 +32,7 @@ describe('HarvestSchedulerService', () => {
         HarvestSchedulerService,
         { provide: HarvestService, useValue: mockHarvestService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: SchedulerRegistry, useValue: mockSchedulerRegistry },
       ],
     }).compile();
 
@@ -49,7 +55,8 @@ describe('HarvestSchedulerService', () => {
     // Re-instantiate to test constructor
     const newService = new HarvestSchedulerService(
       harvestService as any,
-      configService as any
+      configService as any,
+      mockSchedulerRegistry as any,
     );
     
     expect(newService).toBeDefined();
@@ -60,7 +67,8 @@ describe('HarvestSchedulerService', () => {
     
     const newService = new HarvestSchedulerService(
       harvestService as any,
-      configService as any
+      configService as any,
+      mockSchedulerRegistry as any,
     );
     
     expect(newService).toBeDefined();
@@ -122,9 +130,4 @@ describe('HarvestSchedulerService', () => {
     });
   });
 
-  describe('handleCustomHarvest', () => {
-    it('should be defined', () => {
-      expect(service.handleCustomHarvest).toBeDefined();
-    });
-  });
 });

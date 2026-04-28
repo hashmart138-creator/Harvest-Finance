@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ethers } from 'ethers';
 import { CustomLoggerService } from '../logger/custom-logger.service';
 
 @Injectable()
-export class HarvestService {
+export class HarvestService implements OnModuleInit {
   private readonly logger = new Logger(HarvestService.name);
   private provider: ethers.JsonRpcProvider;
   private controllerContract: ethers.Contract;
@@ -14,8 +14,10 @@ export class HarvestService {
   constructor(
     private configService: ConfigService,
     private customLogger: CustomLoggerService,
-  ) {
-    this.initializeBlockchainConnection();
+  ) {}
+
+  async onModuleInit() {
+    await this.initializeBlockchainConnection();
   }
 
   private async initializeBlockchainConnection() {
