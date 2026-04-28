@@ -7,7 +7,10 @@ import { TrackFunnelEventDto } from './dto/analytics.dto';
 @ApiTags('analytics')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller('api/v1/analytics')
+@Controller({
+  path: 'analytics',
+  version: '1',
+})
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
