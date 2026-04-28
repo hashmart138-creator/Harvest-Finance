@@ -222,6 +222,19 @@ export class VaultsService {
     return vaults.map((vault) => this.mapVaultToResponse(vault));
   }
 
+  async getVaultsMetadata(): Promise<any[]> {
+    const vaults = await this.vaultRepository.find({
+      select: ['vaultName', 'symbol', 'assetPair'],
+      where: { isPublic: true },
+    });
+
+    return vaults.map((v) => ({
+      name: v.vaultName,
+      symbol: v.symbol,
+      assetPair: v.assetPair,
+    }));
+  }
+
   mapVaultToResponse(vault: Vault): VaultResponseDto {
     return {
       id: vault.id,
@@ -230,6 +243,8 @@ export class VaultsService {
       status: vault.status,
       vaultName: vault.vaultName,
       description: vault.description,
+      symbol: vault.symbol,
+      assetPair: vault.assetPair,
       totalDeposits: Number(vault.totalDeposits),
       maxCapacity: Number(vault.maxCapacity),
       availableCapacity: vault.availableCapacity,
