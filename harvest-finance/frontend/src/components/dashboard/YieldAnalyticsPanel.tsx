@@ -7,15 +7,17 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip, 
+  Tooltip as RechartsTooltip, 
   ResponsiveContainer,
   AreaChart,
   Area,
   ComposedChart,
   Bar
 } from 'recharts';
-import { Card, CardHeader, CardBody } from '@/components/ui';
+import { Card, CardHeader, CardBody, Tooltip } from '@/components/ui';
 import { format } from 'date-fns';
+import { Info } from 'lucide-react';
+import { getTermTooltip } from '@/lib/defi-terms';
 
 interface YieldAnalyticsData {
   contractId: string;
@@ -177,7 +179,16 @@ export const YieldAnalyticsPanel: React.FC<YieldAnalyticsPanelProps> = ({
     <div className="space-y-4">
       {/* Current APY Summary */}
       <Card variant="default">
-        <CardHeader title="Current 7-Day APY" />
+        <CardHeader 
+          title={
+            <Tooltip content={getTermTooltip('apy')} position="bottom">
+              <span className="flex items-center gap-1 cursor-help">
+                Current 7-Day APY
+                <Info className="w-4 h-4 opacity-60" />
+              </span>
+            </Tooltip>
+          } 
+        />
         <CardBody>
           <div className="flex items-baseline space-x-2">
             <span className="text-3xl font-bold text-green-600">
@@ -217,7 +228,7 @@ export const YieldAnalyticsPanel: React.FC<YieldAnalyticsPanelProps> = ({
                 tickFormatter={(value) => `${value}%`}
                 domain={['dataMin - 1', 'dataMax + 1']}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <RechartsTooltip content={<CustomTooltip />} />
               <Area 
                 type="monotone" 
                 dataKey="sevenDayApy" 
@@ -252,7 +263,7 @@ export const YieldAnalyticsPanel: React.FC<YieldAnalyticsPanelProps> = ({
                   tick={{ fill: '#6B7280', fontSize: 11 }}
                   tickFormatter={(value) => formatVolume(value)}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <RechartsTooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="volume24h" 
                   fill="#3B82F6" 
@@ -282,7 +293,7 @@ export const YieldAnalyticsPanel: React.FC<YieldAnalyticsPanelProps> = ({
                   tickLine={false} 
                   tick={{ fill: '#6B7280', fontSize: 11 }}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <RechartsTooltip content={<CustomTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="hardworkEvents" 
@@ -314,7 +325,12 @@ export const YieldAnalyticsPanel: React.FC<YieldAnalyticsPanelProps> = ({
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Price per Share</p>
+                <Tooltip content={getTermTooltip('price_per_share')} position="top">
+                  <p className="text-sm text-gray-600 cursor-help flex items-center gap-1">
+                    Price per Share
+                    <Info className="w-3 h-3 opacity-60" />
+                  </p>
+                </Tooltip>
                 <p className="font-semibold">
                   {chartData.length > 0 ? chartData[chartData.length - 1].pricePerShare.toFixed(6) : '0'}
                 </p>

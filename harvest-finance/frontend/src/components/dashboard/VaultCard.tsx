@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Card, CardHeader, CardBody, CardFooter, Button, Badge, Stack, Inline, StrategyBadge } from '@/components/ui';
-import { TrendingUp, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { Card, CardHeader, CardBody, CardFooter, Button, Badge, Stack, Inline, StrategyBadge, Tooltip } from '@/components/ui';
+import { TrendingUp, Wallet, ArrowUpRight, ArrowDownLeft, Info } from 'lucide-react';
 import { StrategyType } from '@/types/vault';
 import { formatI128 } from '@/lib/soroban-i128';
+import { getTermTooltip } from '@/lib/defi-terms';
 
 export interface VaultProps {
   id: string;
@@ -49,9 +50,12 @@ export const VaultCard: React.FC<VaultProps> = ({
               <p className="text-sm text-gray-500 dark:text-zinc-400">{asset} Vault</p>
             </div>
           </div>
-          <Badge variant="success" isPill className="bg-harvest-green-100 text-harvest-green-800 dark:bg-harvest-green-900/40 dark:text-harvest-green-300">
-            {apy} APY
-          </Badge>
+          <Tooltip content={getTermTooltip('apy')} position="top">
+            <Badge variant="success" isPill className="bg-harvest-green-100 text-harvest-green-800 dark:bg-harvest-green-900/40 dark:text-harvest-green-300 cursor-help">
+              {apy} APY
+              <Info className="w-3 h-3 ml-1 inline-block opacity-60" />
+            </Badge>
+          </Tooltip>
         </Stack>
       </CardHeader>
 
@@ -71,7 +75,12 @@ export const VaultCard: React.FC<VaultProps> = ({
             </div>
             {shares !== undefined && Number(shares) > 0 && (
               <div className="p-3 bg-gray-50 dark:bg-[#1a3020] rounded-lg col-span-2">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">My Shares</p>
+                <Tooltip content={getTermTooltip('shares')} position="top">
+                  <div className="flex items-center gap-1 mb-1 cursor-help">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">My Shares</p>
+                    <Info className="w-3 h-3 opacity-60" />
+                  </div>
+                </Tooltip>
                 <div className="flex items-baseline gap-1">
                   <p className="text-base font-bold text-harvest-green-600 dark:text-harvest-green-400">
                     {typeof shares === 'bigint' ? formatI128(shares) : shares}

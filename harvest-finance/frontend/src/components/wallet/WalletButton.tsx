@@ -2,9 +2,11 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useWalletStore, shortenAddress } from '@/store/wallet';
-import { Button } from '@/components/ui';
+import { Button, Tooltip } from '@/components/ui';
 import { Badge } from '@/components/ui';
 import { useToastStore } from '@/store/useToastStore';
+import { Info } from 'lucide-react';
+import { getTermTooltip } from '@/lib/defi-terms';
 
 export function WalletButton() {
   const { address, isConnected, isConnecting, error, connect, disconnect } = useWalletStore();
@@ -139,6 +141,12 @@ export function WalletButton() {
             >
               {address}
             </p>
+            <Tooltip content={getTermTooltip('trustlines')} position="bottom">
+              <div className="mt-2 text-xs text-gray-500 flex items-center gap-1 cursor-help">
+                <Info className="w-3 h-3 opacity-60" />
+                Trustlines manage which assets your wallet can hold
+              </div>
+            </Tooltip>
           </div>
 
           <div className="p-2" role="none">
