@@ -114,3 +114,10 @@ export type { TooltipProps } from './Tooltip';
 
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps, EmptyStateVariant } from './EmptyState';
+
+// ============================================
+// Transaction Status
+// ============================================
+
+export { TransactionStatusBadge, TransactionStatusDot } from './TransactionStatus';
+export type { TxStatus } from './TransactionStatus';
