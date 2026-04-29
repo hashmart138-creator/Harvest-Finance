@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nInitializer } from "@/components/layout/I18nInitializer";
 import { MilestoneToastContainer } from "@/components/dashboard/MilestoneToast";
+import ReactToastProvider from '@/components/ui/ReactToastProvider';
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { ServiceWorkerRegistration } from "@/components/layout/ServiceWorkerRegistration";
@@ -72,6 +73,7 @@ export default function RootLayout({
             </a>
             {children}
             <MilestoneToastContainer />
+            <ReactToastProvider />
             <ConnectionStatus />
           </QueryProvider>
         </ThemeProvider>

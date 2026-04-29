@@ -31,6 +31,7 @@ import { useAuthStore } from "@/lib/stores/auth-store";
 import { toI128, calculateEstimatedShares } from "@/lib/soroban-i128";
 import { getTermTooltip } from "@/lib/defi-terms";
 import axios from "@/lib/api-client";
+import { toast } from 'react-toastify';
 
 interface DepositModalVault {
   id: string;
@@ -98,6 +99,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
     setIsLoading(true);
     setError(null);
 
+    let toastId: React.ReactText | null = null;
     try {
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         enqueueOfflineAction({
@@ -112,11 +114,14 @@ export const DepositModal: React.FC<DepositModalProps> = ({
         return;
       }
 
+      toastId = toast.loading('Deposit pending — awaiting confirmation...', { autoClose: false });
+
       await axios.post(
         `http://localhost:3001/api/v1/farm-vaults/${vault.id}/deposit`,
         { amount: i128Value },
         { headers: { Authorization: `Bearer ${token}` } },
       );
+      if (toastId) toast.update(toastId, { render: 'Deposit confirmed', type: 'success', isLoading: false, autoClose: 5000 });
 
       onSuccess?.();
       onDepositSuccess?.(vault.id, Number(amount));
@@ -125,6 +130,12 @@ export const DepositModal: React.FC<DepositModalProps> = ({
     } catch (err: any) {
       console.error("Deposit failed:", err);
       const parsed = parseStellarError(err);
+      // update toast to error with parsed message
+      if (toastId) {
+        toast.update(toastId, { render: parsed.message, type: 'error', isLoading: false, autoClose: 8000 });
+      } else {
+        toast.error(parsed.message);
+      }
       setError(parsed.message);
     } finally {
       setIsLoading(false);
