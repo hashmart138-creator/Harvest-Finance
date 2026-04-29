@@ -3,7 +3,9 @@
 import React from "react";
 import { VaultOverview } from "@/components/dashboard/VaultOverview";
 import { TrendingUp, Wallet, ArrowRight, Activity, ShieldCheck, Zap, ArrowUpRight } from "lucide-react";
-import { Card, CardBody, Button, Badge, cn } from "@/components/ui";
+import { Card, CardBody, Button, Badge, cn, DashboardSkeleton } from "@/components/ui";
+import { useQuery } from "@tanstack/react-query";
+import apiClient from "@/lib/api-client";
 import {
     AreaChart,
     Area,
@@ -35,6 +37,18 @@ const positions = [
 ];
 
 export default function DashboardPage() {
+    const { isLoading } = useQuery({
+        queryKey: ["dashboard-init"],
+        queryFn: async () => {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            return true;
+        }
+    });
+
+    if (isLoading) {
+        return <DashboardSkeleton />;
+    }
+
     return (
         <div className="space-y-12 pb-20 animate-in fade-in duration-1000">
             {/* Dashboard Header - Premium Branding */}

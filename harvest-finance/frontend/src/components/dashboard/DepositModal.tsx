@@ -14,6 +14,7 @@ import {
   Input,
   Tooltip,
   cn,
+  ModalSkeleton
 } from "@/components/ui";
 import {
   Wallet,
@@ -135,7 +136,10 @@ export const DepositModal: React.FC<DepositModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} size="md" className="backdrop-blur-3xl">
       <ModalHeader title="Capital Deployment" onClose={onClose} className="border-b-0 pb-0" />
       <ModalBody>
-        <Stack gap="xl" className="py-2">
+        {!vault ? (
+          <ModalSkeleton />
+        ) : (
+          <Stack gap="xl" className="py-2">
           {/* Liquidity Card - Enhanced Glassmorphism */}
           <div className="relative overflow-hidden rounded-[2.5rem] glass-panel glass-rim bg-gradient-to-br from-harvest-green-600 to-harvest-green-900 p-8 text-white shadow-2xl border-emerald-400/20">
             <div className="absolute -right-4 -top-4 h-48 w-48 rounded-full bg-white/10 blur-3xl animate-pulse" />
@@ -284,6 +288,7 @@ export const DepositModal: React.FC<DepositModalProps> = ({
             </div>
           )}
         </Stack>
+        )}
       </ModalBody>
       <ModalFooter className="border-t-0 pt-4 pb-10 px-8 flex-col gap-4">
         <Button
