@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { buildThrottlerOptions } from './common/config/throttler.config';
 import { CommonModule } from './common/common.module';
+import { RequestValidationMiddleware } from './common/middleware/request-validation.middleware';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VaultsModule } from './vaults/vaults.module';
@@ -166,6 +167,8 @@ import { CreateYieldAnalytics1700000000012 } from './database/migrations/1700000
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer
+      .apply(RequestValidationMiddleware, LoggerMiddleware)
+      .forRoutes('*');
   }
 }
