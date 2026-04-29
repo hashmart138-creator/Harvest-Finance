@@ -173,79 +173,79 @@ contract VaultSecurityTest is Test {
 
     function test_InputVal_DepositZeroAssetsReverts() public {
         vm.prank(user1);
-        vm.expectRevert("Vault: zero assets");
+        vm.expectRevert(Vault.ZeroAssets.selector);
         vault.deposit(0, user1);
     }
 
     function test_InputVal_DepositZeroReceiverReverts() public {
         vm.prank(user1);
-        vm.expectRevert("Vault: zero receiver");
+        vm.expectRevert(Vault.ZeroReceiver.selector);
         vault.deposit(1e18, address(0));
     }
 
     function test_InputVal_WithdrawZeroAssetsReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero assets");
+        vm.expectRevert(Vault.ZeroAssets.selector);
         vault.withdraw(0, user1, user1);
     }
 
     function test_InputVal_WithdrawZeroReceiverReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero receiver");
+        vm.expectRevert(Vault.ZeroReceiver.selector);
         vault.withdraw(1e18, address(0), user1);
     }
 
     function test_InputVal_WithdrawZeroOwnerReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero owner");
+        vm.expectRevert(Vault.ZeroOwner.selector);
         vault.withdraw(1e18, user1, address(0));
     }
 
     function test_InputVal_RedeemZeroSharesReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero shares");
+        vm.expectRevert(Vault.ZeroSharesBurned.selector);
         vault.redeem(0, user1, user1);
     }
 
     function test_InputVal_RedeemZeroReceiverReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero receiver");
+        vm.expectRevert(Vault.ZeroReceiver.selector);
         vault.redeem(1e18, address(0), user1);
     }
 
     function test_InputVal_RedeemZeroOwnerReverts() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: zero owner");
+        vm.expectRevert(Vault.ZeroOwner.selector);
         vault.redeem(1e18, user1, address(0));
     }
 
     function test_InputVal_ConstructorZeroAssetReverts() public {
-        vm.expectRevert("Vault: zero asset address");
+        vm.expectRevert(Vault.ZeroAssets.selector);
         new Vault(IERC20(address(0)), "V", "V", admin);
     }
 
     function test_InputVal_ConstructorZeroAdminReverts() public {
-        vm.expectRevert("Vault: zero admin address");
+        vm.expectRevert(Vault.ZeroRecipient.selector);
         new Vault(token, "V", "V", address(0));
     }
 
     function test_InputVal_CannotWithdrawMoreThanBalance() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: insufficient shares");
+        vm.expectRevert(Vault.InsufficientShares.selector);
         vault.withdraw(2e18, user1, user1);
     }
 
     function test_InputVal_CannotRedeemMoreSharesThanOwned() public {
         vm.prank(user1); uint256 shares = vault.deposit(1e18, user1);
         vm.prank(user1);
-        vm.expectRevert("Vault: insufficient shares");
+        vm.expectRevert(Vault.InsufficientShares.selector);
         vault.redeem(shares * 2, user1, user1);
     }
 
@@ -267,24 +267,24 @@ contract VaultSecurityTest is Test {
     function test_Pause_DepositRevertsWhenPaused() public {
         vm.prank(pauser); vault.pause();
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(Vault.Paused.selector);
         vault.deposit(1e18, user1);
     }
 
-    function test_Pause_WithdrawRevertsWhenPaused() public {
+    function test_Pause_WithdrawWorksWhenPaused() public {
         vm.prank(user1); vault.deposit(1e18, user1);
         vm.prank(pauser); vault.pause();
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
         vault.withdraw(1e18, user1, user1);
+        assertEq(vault.totalAssets(), 0);
     }
 
-    function test_Pause_RedeemRevertsWhenPaused() public {
+    function test_Pause_RedeemWorksWhenPaused() public {
         vm.prank(user1); uint256 shares = vault.deposit(1e18, user1);
         vm.prank(pauser); vault.pause();
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
         vault.redeem(shares, user1, user1);
+        assertEq(vault.balanceOf(user1), 0);
     }
 
     function test_Pause_AllOperationsWorkAfterUnpause() public {
@@ -327,15 +327,14 @@ contract VaultSecurityTest is Test {
 
     function test_Emergency_CannotRescueVaultAsset() public {
         vm.prank(user1); vault.deposit(1e18, user1);
-
         vm.prank(admin);
-        vm.expectRevert("Vault: cannot rescue vault asset");
+        vm.expectRevert(Vault.CannotRescueVaultAsset.selector);
         vault.emergencyWithdraw(address(token), admin);
     }
 
     function test_Emergency_ZeroTokenReverts() public {
         vm.prank(admin);
-        vm.expectRevert("Vault: zero token address");
+        vm.expectRevert(Vault.ZeroToken.selector);
         vault.emergencyWithdraw(address(0), admin);
     }
 
@@ -343,14 +342,14 @@ contract VaultSecurityTest is Test {
         MockERC20 stray = new MockERC20("S", "S", 1e18);
         stray.transfer(address(vault), 1e18);
         vm.prank(admin);
-        vm.expectRevert("Vault: zero recipient");
+        vm.expectRevert(Vault.ZeroRecipient.selector);
         vault.emergencyWithdraw(address(stray), address(0));
     }
 
     function test_Emergency_NothingToRescueReverts() public {
         MockERC20 stray = new MockERC20("S", "S", 0);
         vm.prank(admin);
-        vm.expectRevert("Vault: nothing to rescue");
+        vm.expectRevert(Vault.NothingToRescue.selector);
         vault.emergencyWithdraw(address(stray), admin);
     }
 
@@ -378,7 +377,7 @@ contract VaultSecurityTest is Test {
 
         // user2 tries to withdraw more than user1 holds — should fail
         vm.prank(user2);
-        vm.expectRevert("Vault: insufficient shares");
+        vm.expectRevert(Vault.InsufficientShares.selector);
         vault.withdraw(2e18, user2, user1);
 
         // Allowance must be completely unchanged (not consumed by failed call)
@@ -390,7 +389,7 @@ contract VaultSecurityTest is Test {
         vm.prank(user1); vault.approve(user2, shares * 2);
 
         vm.prank(user2);
-        vm.expectRevert("Vault: insufficient shares");
+        vm.expectRevert(Vault.InsufficientShares.selector);
         vault.redeem(shares * 2, user2, user1);
 
         assertEq(vault.allowance(user1, user2), shares * 2);
@@ -581,7 +580,7 @@ contract VaultSecurityTest is Test {
         vm.prank(pauser); vault.pause();
 
         vm.prank(user1);
-        vm.expectRevert("Pausable: paused");
+        vm.expectRevert(Vault.Paused.selector);
         vault.deposit(assets, user1);
     }
 
@@ -629,7 +628,7 @@ contract VaultSecurityTest is Test {
 
         // This should fail on solvency check
         vm.prank(user2);
-        vm.expectRevert("Vault: insufficient shares");
+        vm.expectRevert(Vault.InsufficientShares.selector);
         vault.redeem(tooMany, user2, user1);
 
         // Allowance must be intact

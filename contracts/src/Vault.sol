@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "./interfaces/IVault.sol";
+import "./interfaces/IOracle.sol";
 import "./libraries/VaultLib.sol";
 import "./libraries/TokenValidation.sol";
 
@@ -20,6 +21,29 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using VaultLib for uint256;
 
+    // Custom Errors
+    error ZeroAssets();
+    error ZeroReceiver();
+    error ZeroOwner();
+    error DepositCapExceeded();
+    error ZeroSharesMinted();
+    error ZeroSharesBurned();
+    error ZeroAssetsRedeemed();
+    error InsufficientShares();
+    error InsufficientVaultAssets();
+    error BlockWithdrawalLimitExceeded();
+    error ZeroToken();
+    error ZeroRecipient();
+    error CannotRescueVaultAsset();
+    error NothingToRescue();
+    error Paused();
+    error InvalidSlippage();
+    error SlippageExceeded();
+    error PriceOracleNotConfigured();
+    error StaleOraclePrice();
+    error PriceDeviationExceeded(uint256 oraclePrice, uint256 expectedPrice, uint256 maxSlippageBps);
+    error MaxGasPriceExceeded(uint256 gasPrice, uint256 maxGasPrice);
+
     // Roles
     bytes32 public constant ADMIN_ROLE  = keccak256("ADMIN_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
@@ -30,6 +54,8 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     uint256 private _totalAssets;
     uint256 public depositCap;
     bool public paused;
+    IOracle public priceOracle;
+    uint256 public maxGasPrice;
 
     // Rate Limiting
     uint256 public maxWithdrawalPerBlock;
@@ -42,6 +68,17 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     event VaultPaused(address indexed pauser);
     event VaultUnpaused(address indexed pauser);
     event EmergencyWithdraw(address indexed admin, address indexed token, address indexed recipient, uint256 amount);
+    event VaultAdminAction(address indexed admin, bytes32 indexed action, uint256 oldValue, uint256 newValue);
+    event VaultEmergencyAction(address indexed admin, bytes32 indexed action, address indexed target, uint256 amount);
+    event PriceOracleUpdated(address indexed admin, address indexed oldOracle, address indexed newOracle);
+    event MaxGasPriceUpdated(address indexed admin, uint256 oldMaxGasPrice, uint256 newMaxGasPrice);
+    event MEVProtectionChecked(
+        address indexed caller,
+        address indexed asset,
+        uint256 oraclePrice,
+        uint256 expectedPrice,
+        uint256 maxSlippageBps
+    );
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -79,7 +116,7 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     }
 
     modifier whenNotPaused() {
-        require(!paused, "Vault: paused");
+        if (paused) revert Paused();
         _;
     }
 
@@ -92,14 +129,39 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
         whenNotPaused
         returns (uint256 shares)
     {
-        require(assets > 0,             "Vault: zero assets");
-        require(receiver != address(0), "Vault: zero receiver");
-        require(_totalAssets + assets <= depositCap, "Vault: deposit cap exceeded");
+        shares = _deposit(assets, receiver);
+    }
 
-        shares = convertToShares(assets);
-        require(shares > 0, "Vault: zero shares minted");
+    function depositWithSlippage(
+        uint256 assets,
+        address receiver,
+        uint256 minShares,
+        uint256 expectedAssetPrice,
+        uint256 maxSlippageBps
+    )
+        external
+        nonReentrant
+        whenNotPaused
+        returns (uint256 shares)
+    {
+        _enforceMEVProtection(expectedAssetPrice, maxSlippageBps);
+        shares = _deposit(assets, receiver);
+        if (shares < minShares) revert SlippageExceeded();
+    }
 
-        _totalAssets += assets;
+    function _deposit(uint256 assets, address receiver) internal returns (uint256 shares) {
+        if (assets == 0) revert ZeroAssets();
+        if (receiver == address(0)) revert ZeroReceiver();
+        
+        uint256 currentTotalAssets = _totalAssets;
+        if (currentTotalAssets + assets > depositCap) revert DepositCapExceeded();
+
+        shares = VaultLib.toShares(assets, totalSupply(), currentTotalAssets);
+        if (shares == 0) revert ZeroSharesMinted();
+
+        unchecked {
+            _totalAssets = currentTotalAssets + assets;
+        }
         _mint(receiver, shares);
 
         asset.safeTransferFrom(msg.sender, address(this), assets);
@@ -117,31 +179,54 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 shares)
     {
-        require(assets > 0,             "Vault: zero assets");
-        require(receiver != address(0), "Vault: zero receiver");
-        require(owner != address(0),    "Vault: zero owner");
+        shares = _withdraw(assets, receiver, owner);
+    }
+
+    function withdrawWithSlippage(
+        uint256 assets,
+        address receiver,
+        address owner,
+        uint256 maxShares,
+        uint256 expectedAssetPrice,
+        uint256 maxSlippageBps
+    )
+        external
+        nonReentrant
+        returns (uint256 shares)
+    {
+        _enforceMEVProtection(expectedAssetPrice, maxSlippageBps);
+        shares = _withdraw(assets, receiver, owner);
+        if (shares > maxShares) revert SlippageExceeded();
+    }
+
+    function _withdraw(uint256 assets, address receiver, address owner) internal returns (uint256 shares) {
+        if (assets == 0) revert ZeroAssets();
+        if (receiver == address(0)) revert ZeroReceiver();
+        if (owner == address(0)) revert ZeroOwner();
 
         _checkWithdrawalLimit(assets);
 
-        shares = convertToShares(assets);
-        require(shares > 0, "Vault: zero shares burned");
+        uint256 currentTotalAssets = _totalAssets;
+        shares = VaultLib.toShares(assets, totalSupply(), currentTotalAssets);
+        if (shares == 0) revert ZeroSharesBurned();
 
         if (msg.sender != owner) {
             _spendAllowance(owner, msg.sender, shares);
         }
 
-        require(balanceOf(owner) >= shares, "Vault: insufficient shares");
-        require(_totalAssets >= assets,     "Vault: insufficient vault assets");
+        if (balanceOf(owner) < shares) revert InsufficientShares();
+        if (currentTotalAssets < assets) revert InsufficientVaultAssets();
 
-        _totalAssets -= assets;
+        unchecked {
+            _totalAssets = currentTotalAssets - assets;
+        }
         _burn(owner, shares);
 
         asset.safeTransfer(receiver, assets);
 
-        emit Withdraw(msg.sender, receiver, assets, shares);
+        emit Withdraw(msg.sender, receiver, owner, assets, shares);
     }
 
     /**
@@ -154,15 +239,36 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
     )
         external
         nonReentrant
-        whenNotPaused
         returns (uint256 assets)
     {
-        require(shares > 0,             "Vault: zero shares");
-        require(receiver != address(0), "Vault: zero receiver");
-        require(owner != address(0),    "Vault: zero owner");
+        assets = _redeem(shares, receiver, owner);
+    }
 
-        assets = convertToAssets(shares);
-        require(assets > 0, "Vault: zero assets redeemed");
+    function redeemWithSlippage(
+        uint256 shares,
+        address receiver,
+        address owner,
+        uint256 minAssets,
+        uint256 expectedAssetPrice,
+        uint256 maxSlippageBps
+    )
+        external
+        nonReentrant
+        returns (uint256 assets)
+    {
+        _enforceMEVProtection(expectedAssetPrice, maxSlippageBps);
+        assets = _redeem(shares, receiver, owner);
+        if (assets < minAssets) revert SlippageExceeded();
+    }
+
+    function _redeem(uint256 shares, address receiver, address owner) internal returns (uint256 assets) {
+        if (shares == 0) revert ZeroSharesBurned();
+        if (receiver == address(0)) revert ZeroReceiver();
+        if (owner == address(0)) revert ZeroOwner();
+
+        uint256 currentTotalAssets = _totalAssets;
+        assets = VaultLib.toAssets(shares, totalSupply(), currentTotalAssets);
+        if (assets == 0) revert ZeroAssetsRedeemed();
 
         _checkWithdrawalLimit(assets);
 
@@ -170,52 +276,91 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
             _spendAllowance(owner, msg.sender, shares);
         }
 
-        require(balanceOf(owner) >= shares, "Vault: insufficient shares");
-        require(_totalAssets >= assets,     "Vault: insufficient vault assets");
+        if (balanceOf(owner) < shares) revert InsufficientShares();
+        if (currentTotalAssets < assets) revert InsufficientVaultAssets();
 
-        _totalAssets -= assets;
+        unchecked {
+            _totalAssets = currentTotalAssets - assets;
+        }
         _burn(owner, shares);
 
         asset.safeTransfer(receiver, assets);
 
-        emit Withdraw(msg.sender, receiver, assets, shares);
+        emit Withdraw(msg.sender, receiver, owner, assets, shares);
+    }
+
+    function _enforceMEVProtection(uint256 expectedAssetPrice, uint256 maxSlippageBps) internal {
+        if (maxSlippageBps > 10_000) revert InvalidSlippage();
+        if (address(priceOracle) == address(0)) revert PriceOracleNotConfigured();
+        if (maxGasPrice != 0 && tx.gasprice > maxGasPrice) {
+            revert MaxGasPriceExceeded(tx.gasprice, maxGasPrice);
+        }
+        if (priceOracle.isStale(address(asset))) revert StaleOraclePrice();
+
+        (uint256 oraclePrice,) = priceOracle.getPrice(address(asset));
+        uint256 deviation = oraclePrice > expectedAssetPrice
+            ? oraclePrice - expectedAssetPrice
+            : expectedAssetPrice - oraclePrice;
+
+        if (expectedAssetPrice == 0 || (deviation * 10_000) / expectedAssetPrice > maxSlippageBps) {
+            revert PriceDeviationExceeded(oraclePrice, expectedAssetPrice, maxSlippageBps);
+        }
+
+        emit MEVProtectionChecked(msg.sender, address(asset), oraclePrice, expectedAssetPrice, maxSlippageBps);
     }
 
     /**
      * @dev Internal helper to enforce per-block withdrawal limits.
      */
     function _checkWithdrawalLimit(uint256 amount) internal {
-        if (maxWithdrawalPerBlock == 0) return; // Limit disabled
+        uint256 limit = maxWithdrawalPerBlock;
+        if (limit == 0) return; // Limit disabled
 
         if (block.number > lastWithdrawalBlock) {
             lastWithdrawalBlock = block.number;
             cumulativeWithdrawalsInBlock = amount;
         } else {
-            cumulativeWithdrawalsInBlock += amount;
+            uint256 newCumulative = cumulativeWithdrawalsInBlock + amount;
+            if (newCumulative > limit) revert BlockWithdrawalLimitExceeded();
+            cumulativeWithdrawalsInBlock = newCumulative;
         }
-        require(cumulativeWithdrawalsInBlock <= maxWithdrawalPerBlock, "Vault: block withdrawal limit exceeded");
     }
 
     // --- Admin Functions ---
 
     function setWithdrawalLimit(uint256 limit) external onlyRole(ADMIN_ROLE) {
         emit WithdrawalLimitUpdated(maxWithdrawalPerBlock, limit);
+        emit VaultAdminAction(msg.sender, keccak256("SET_WITHDRAWAL_LIMIT"), maxWithdrawalPerBlock, limit);
         maxWithdrawalPerBlock = limit;
+    }
+
+    function setPriceOracle(IOracle oracle_) external onlyRole(ADMIN_ROLE) {
+        emit PriceOracleUpdated(msg.sender, address(priceOracle), address(oracle_));
+        priceOracle = oracle_;
+    }
+
+    function setMaxGasPrice(uint256 newMaxGasPrice) external onlyRole(ADMIN_ROLE) {
+        emit MaxGasPriceUpdated(msg.sender, maxGasPrice, newMaxGasPrice);
+        emit VaultAdminAction(msg.sender, keccak256("SET_MAX_GAS_PRICE"), maxGasPrice, newMaxGasPrice);
+        maxGasPrice = newMaxGasPrice;
     }
 
     function setDepositCap(uint256 cap) external onlyRole(ADMIN_ROLE) {
         emit DepositCapUpdated(depositCap, cap);
+        emit VaultAdminAction(msg.sender, keccak256("SET_DEPOSIT_CAP"), depositCap, cap);
         depositCap = cap;
     }
 
     function pause() external onlyRole(PAUSER_ROLE) {
         paused = true;
         emit VaultPaused(msg.sender);
+        emit VaultEmergencyAction(msg.sender, keccak256("PAUSE"), address(this), 0);
     }
 
     function unpause() external onlyRole(PAUSER_ROLE) {
         paused = false;
         emit VaultUnpaused(msg.sender);
+        emit VaultEmergencyAction(msg.sender, keccak256("UNPAUSE"), address(this), 0);
     }
 
     function emergencyWithdraw(address token, address recipient) external onlyRole(ADMIN_ROLE) {
@@ -224,10 +369,11 @@ contract Vault is Initializable, IVault, ERC20Upgradeable, AccessControlUpgradea
         require(token != address(asset), "Vault: cannot rescue vault asset");
 
         uint256 balance = IERC20Upgradeable(token).balanceOf(address(this));
-        require(balance > 0, "Vault: nothing to rescue");
+        if (balance == 0) revert NothingToRescue();
 
         IERC20Upgradeable(token).safeTransfer(recipient, balance);
         emit EmergencyWithdraw(msg.sender, token, recipient, balance);
+        emit VaultEmergencyAction(msg.sender, keccak256("EMERGENCY_WITHDRAW"), token, balance);
     }
 
     // --- View Functions ---

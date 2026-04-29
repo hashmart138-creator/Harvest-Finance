@@ -8,28 +8,32 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { buildThrottlerOptions } from './common/config/throttler.config';
+import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { VaultsModule } from './vaults/vaults.module';
 import { FarmIntelligenceModule } from './farm-intelligence/farm-intelligence.module';
 import { ExportModule } from './export/export.module';
 import { FarmVaultsModule } from './farm-vaults/farm-vaults.module';
+import { HarvestModule } from './harvest/harvest.module';
 import { HealthModule } from './health/health.module';
 import { OrdersModule } from './orders/orders.module';
 import { VerificationModule } from './verification/verification.module';
 import { DatabaseModule } from './database/database.module';
-import { HealthModule } from './health/health.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { LoggerModule } from './logger/logger.module';
 import { MultiChainModule } from './multi-chain/multi-chain.module';
-import { OrdersModule } from './orders/orders.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { SorobanModule } from './soroban/soroban.module';
 import { StellarModule } from './stellar/stellar.module';
-import { VerificationModule } from './verification/verification.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { StateSyncModule } from './state-sync/state-sync.module';
+import { AchievementsModule } from './achievements/achievements.module';
+import { AdminModule } from './admin/admin.module';
+import { InsuranceModule } from './insurance/insurance.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { RewardsModule } from './rewards/rewards.module';
 import {
   Achievement,
   CreditScore,
@@ -126,6 +130,7 @@ import { CreateYieldAnalytics1700000000012 } from './database/migrations/1700000
     }),
     CacheModule.register({ isGlobal: true, ttl: 600, max: 100 }),
     ScheduleModule.forRoot(),
+    CommonModule,
     AuthModule,
     UsersModule,
     VaultsModule,
@@ -140,6 +145,7 @@ import { CreateYieldAnalytics1700000000012 } from './database/migrations/1700000
     AdminModule,
     ExportModule,
     FarmVaultsModule,
+    HarvestModule,
     InsuranceModule,
     RealtimeModule,
     LoggerModule,
