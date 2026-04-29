@@ -99,7 +99,7 @@ export { ThemeToggle } from './ThemeToggle';
 // Skeleton Loaders
 // ============================================
 
-export { Skeleton, VaultCardSkeleton, VaultTableRowSkeleton, TransactionRowSkeleton, MetricCardSkeleton } from './Skeleton';
+export { Skeleton, VaultCardSkeleton, VaultTableRowSkeleton, TransactionRowSkeleton, MetricCardSkeleton, DashboardSkeleton, ModalSkeleton } from './Skeleton';
 
 // ============================================
 // Tooltip

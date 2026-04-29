@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardBody, CardFooter, Button, Badge, Stack, Tooltip, cn } from '@/components/ui';
 import { TrendingUp, Wallet, ArrowUpRight, ArrowDownLeft, Info, ShieldCheck, Activity } from 'lucide-react';
 import { StrategyType } from '@/types/vault';
@@ -149,6 +150,15 @@ export const VaultCard: React.FC<VaultProps> = ({
           </div>
         </Button>
       </CardFooter>
+      <div className="px-6 pb-6 pt-0 text-center">
+        <Link 
+          href={`/strategies/${id}`}
+          className="inline-flex items-center justify-center gap-2 text-[10px] font-black text-gray-400 hover:text-harvest-green-600 transition-all uppercase tracking-[0.2em] group/link"
+        >
+          <span>Deep Strategy Analysis</span>
+          <ArrowUpRight className="w-3 h-3 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+        </Link>
+      </div>
     </Card>
   );
 };
